@@ -18,19 +18,22 @@ jobs:
     - name: Set up build environment
       run: |
         sudo apt-get update
-        sudo apt-get install -y bc bison build-essential curl flex git kmod libssl-dev libncurses5-dev libelf-dev ccache dwarves unzip
+        sudo apt-get install -y \
+          bc bison build-essential curl flex git \
+          kmod libssl-dev libncurses5-dev libelf-dev \
+          ccache dwarves zip unzip
 
-    - name: Clone AOSP Clang
+    - name: Clone Proton Clang
       run: |
-        git clone --depth=1 https://github.com/PixelExperience/clang.git clang
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
 
     - name: Export Environment Variables
       run: |
         echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
         echo "ARCH=arm64" >> $GITHUB_ENV
         echo "SUBARCH=arm64" >> $GITHUB_ENV
-        echo "KBUILD_COMPILER_STRING=$(clang/bin/clang --version | head -n 1)" >> $GITHUB_ENV
         echo "PATH=$GITHUB_WORKSPACE/clang/bin:$PATH" >> $GITHUB_ENV
+        echo "KBUILD_COMPILER_STRING=$($GITHUB_WORKSPACE/clang/bin/clang --version | head -n 1)" >> $GITHUB_ENV
 
     - name: Kernel Defconfig
       run: |
@@ -40,8 +43,8 @@ jobs:
       run: |
         make -j$(nproc) O=out ARCH=$ARCH SUBARCH=$SUBARCH \
           CC=clang \
-          CROSS_COMPILE=aarch64-linux-android- \
-          CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
           CLANG_TRIPLE=aarch64-linux-gnu-
 
     - name: Check Kernel Image
@@ -54,7 +57,7 @@ jobs:
 
     - name: Clone AnyKernel3 (NetHunter)
       run: |
-        git clone --depth=1 https://github.com/offensive-security/nethunter-kernel-builder anykernel
+        git clone --depth=1 https://github.com/offensive-security/nethunter-kernel-builder.git anykernel
 
     - name: Prepare Flashable ZIP
       run: |
@@ -66,4 +69,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: NetHunter-Kernel-Garnet
-        path: NetHunter_Garnet_Kernel.zip
+        path: NetHunter_Garnet_Kernel.zipp
